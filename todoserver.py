@@ -10,8 +10,9 @@ def todos():
     return todoList
   elif request.method == "POST":
     data = request.get_json()
+    todoList.update(data)
     print(str(data))
-    return "",200
+    return "Success",200
   return 400
   
 
