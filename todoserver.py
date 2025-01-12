@@ -1,13 +1,12 @@
 from flask import Flask
 
-todoList = {}
+todoList = { "monday": ["Buy groceries", "Clean the house"] }
 
 app = Flask(__name__)
 
 @app.route("/todos", methods=["GET"])
 def getlist():
   return todoList
-  r
 
 @app.route("/todos", methods=["POST"])
 def create():
