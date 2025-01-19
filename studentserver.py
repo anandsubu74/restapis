@@ -1,5 +1,5 @@
 import json
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 import redis
 
 studentList = {}
@@ -229,36 +229,34 @@ def courses():
 
 @app.route("/student/search", methods=["GET"])
 def student_search():
-    # Get the search type (either 'name' or 'major') from query params
-    search_type = request.args.get("search_type")  
-    # Get the search value from query params
+    search_type = request.args.get("search_type")  # 'name', 'major', or 'course'
     search_value = request.args.get("search_value")
 
-    # Check if search value is provided
     if not search_value:
         return jsonify({"message": "Search value is missing!"}), 400
 
     students = []
-    # Get all student keys from Redis
     keys = r.keys("student:*")
 
-    # Loop through all student keys and search for matching values
     for key in keys:
-        student_data = r.get(key)  
+        student_data = r.get(key)
         if student_data:
             student_info = json.loads(student_data)
             if search_type == "name" and search_value.lower() in student_info["name"].lower():
                 students.append(student_info)
             elif search_type == "major" and search_value.lower() in student_info["major"].lower():
                 students.append(student_info)
+            elif search_type == "course" and search_value.lower() in [c.lower() for c in student_info["courses"]]:
+                students.append(student_info)
 
-    # If no students match the search criteria, return a 404 error
     if not students:
         return jsonify({"message": "No students found matching the search criteria"}), 404
 
-    # Return the list of matching students
     return jsonify({"students": students})
 
+@app.route("/")
+def serve_frontend():
+    return send_from_directory("static", "index.html")
 # Run the Flask application in debug mode
 if __name__ == "__main__":
     app.run(debug=True)
